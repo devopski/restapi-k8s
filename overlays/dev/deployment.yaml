@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restapi # necessary for Kustomize identification
+spec:
+  template:
+    spec:
+      containers:
+      - image: image-registry.openshift-image-registry.svc:5000/restapi/restapi:latest
+        name: restapi # necessary for Kustomize identification

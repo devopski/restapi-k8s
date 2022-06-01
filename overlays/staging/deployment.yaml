@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-manager # necessary for Kustomize identification
+spec:
+  template:
+    spec:
+      containers:
+      - image: registry.gitlab.com/jedrzejczakdaw/aplikacja_kod:main78234012
+        name: employee-manager # necessary for Kustomize identification
