@@ -6,7 +6,7 @@ metadata:
 spec:
   params:
     - default: >-
-        image-registry.openshift-image-registry.svc:5000/restapi/restapi
+        image-registry.openshift-image-registry.svc:5000/restapi/development-restapi
       name: IMAGE_NAME
       type: string
     - default: 'https://github.com/devopski/restapi.git'
