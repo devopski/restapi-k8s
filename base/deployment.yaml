@@ -14,4 +14,4 @@ spec:
     spec:
       containers:
       - name: restapi
-        image: image-registry.openshift-image-registry.svc:5000/restapi/development-restapi
+        image: quay.io/dawid_jedrzejczak/restapi:latest
