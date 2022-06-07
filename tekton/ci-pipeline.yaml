@@ -6,7 +6,7 @@ metadata:
 spec:
   params:
     - default: >-
-        quay.io/dawid_jedrzejczak/restapi:latest
+        quay.io/dawid_jedrzejczak/restapi
       name: IMAGE_NAME
       type: string
     - default: 'https://github.com/devopski/restapi.git'
