@@ -7,6 +7,9 @@ patchesStrategicMerge:
 resources:
 - ../../base
 images:
+- name: image-registry.openshift-image-registry.svc:5000/restapi/development-restapi
+  newName: image-registry.openshift-image-registry.svc:5000/restapi/development-restapi
+  newTag: test07062022
 - name: image-registry.openshift-image-registry.svc:5000/restapi/restapi
   newName: image-registry.openshift-image-registry.svc:5000/restapi/restapi
   newTag: kludi_change
