@@ -39,6 +39,8 @@ spec:
           value: '$(params.IMAGE_NAME):$(params.IMAGE_TAG)'
         - name: TLSVERIFY
           value: 'false'
+        - name: VERSION
+          value: openjdk-17-ubi8
       runAfter:
         - fetch-repository
       taskRef:
@@ -46,6 +48,24 @@ spec:
         name: s2i-java
       workspaces:
         - name: source
+          workspace: restapi-workspace
+    - name: git-commit
+      params:
+        - name: GIT_REPOSITORY
+          value: https://github.com/devopski/restapi-k8s.git
+        - name: CURRENT_IMAGE
+          value: $(params.IMAGE_NAME)
+        - name: NEW_IMAGE
+          value: '$(params.IMAGE_NAME):$(params.IMAGE_TAG)'
+        - name: KUSTOMIZATION_PATH
+          value: overlays/dev
+      taskRef:
+        kind: Task
+        name: git-update-deployment
+      runAfter:
+        - build
+      workspaces:
+        - name: output
           workspace: restapi-workspace
   workspaces:
     - name: restapi-workspace

@@ -6,5 +6,5 @@ spec:
   template:
     spec:
       containers:
-      - image: image-registry.openshift-image-registry.svc:5000/restapi/restapi:dawid
+      - image: image-registry.openshift-image-registry.svc:5000/restapi/development-restapi:dawid
         name: restapi # necessary for Kustomize identification

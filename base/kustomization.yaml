@@ -3,3 +3,4 @@ resources:
 - service.yaml
 - imagestream.yaml
 - route.yaml
+- pvc.yaml
