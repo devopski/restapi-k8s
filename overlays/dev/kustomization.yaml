@@ -9,4 +9,4 @@ resources:
 images:
 - name: image-registry.openshift-image-registry.svc:5000/restapi/restapi
   newName: image-registry.openshift-image-registry.svc:5000/restapi/restapi
-  newTag: devbranch
+  newTag: latest
