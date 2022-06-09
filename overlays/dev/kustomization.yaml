@@ -9,4 +9,4 @@ resources:
 images:
 - name: quay.io/dawid_jedrzejczak/restapi
   newName: quay.io/dawid_jedrzejczak/restapi
-  newTag: dawid
+  newTag: sample1
