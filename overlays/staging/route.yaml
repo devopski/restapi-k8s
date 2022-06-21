@@ -7,6 +7,6 @@ spec:
   path: /
   to:
     kind: Service
-    name: restapi-service
+    name: staging-restapi-service
   port:
     targetPort: 8080
