@@ -4,6 +4,7 @@ namePrefix: staging-
 
 patchesStrategicMerge:
 - deployment.yaml
+- route.yaml
 resources:
 - ../../base
 images:

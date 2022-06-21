@@ -4,6 +4,7 @@ namePrefix: development-
 
 patchesStrategicMerge:
 - deployment.yaml
+- route.yaml
 resources:
 - ../../base
 images:
