@@ -2,7 +2,7 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: restapi
-  namespace: restapi
+  namespace: restapi-staging
 spec:
   path: /
   to:
