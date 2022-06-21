@@ -1,0 +1,96 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: restapi-ci-v2
+  namespace: restapi
+spec:
+  params:
+    - name: IMAGE_NAME
+      type: string
+      default: quay.io/dawid_jedrzejczak/restapi
+    - name: GIT_REPO
+      type: string
+      default: https://github.com/devopski/restapi.git
+    - name: GIT_REVISION
+      type: string
+      default: main
+    - name: IMAGE_TAG
+      type: string
+      default: latest
+    - name: CONTEXT_DIR
+      type: string
+      default: repo
+  tasks:
+    - name: clone-repository
+      params:
+        - name: url
+          value: $(params.GIT_REPO)
+        - name: revision
+          value: $(params.GIT_REVISION)
+        - name: deleteExisting
+          value: 'true'
+        - name: subdirectory
+          value: $(params.CONTEXT_DIR)
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: restapi-workspace
+    - name: maven-build
+      params:
+        - name: CONTEXT_DIR
+          value: $(params.CONTEXT_DIR)
+        - name: MAVEN_IMAGE
+          value: maven:3.8-openjdk-17
+        - name: GOALS
+          value:
+            - -Dmaven.repo.local=$(workspaces.source.path)/DEPENDENCIES
+            - -DskipTests
+            - clean
+            - package
+      runAfter:
+        - clone-repository
+      taskRef:
+        kind: ClusterTask
+        name: maven
+      workspaces:
+        - name: maven-settings
+          workspace: restapi-workspace
+        - name: source
+          workspace: restapi-workspace
+    - name: buildah-container-image
+      params:
+        - name: IMAGE
+          value: '$(params.IMAGE_NAME):$(params.IMAGE_TAG)'
+        - name: CONTEXT
+          value: $(params.CONTEXT_DIR)
+      runAfter:
+        - maven-build
+      taskRef:
+        kind: ClusterTask
+        name: buildah
+      workspaces:
+        - name: source
+          workspace: restapi-workspace
+    - name: git-commit
+      params:
+        - name: GIT_REPOSITORY
+          value: https://github.com/devopski/restapi-k8s.git
+        - name: CURRENT_IMAGE
+          value: $(params.IMAGE_NAME)
+        - name: NEW_IMAGE
+          value: '$(params.IMAGE_NAME):$(params.IMAGE_TAG)'
+        - name: KUSTOMIZATION_PATH
+          value: overlays/dev
+      taskRef:
+        kind: Task
+        name: git-update-deployment
+      runAfter:
+        - buildah-container-image
+      workspaces:
+        - name: output
+          workspace: restapi-workspace
+  workspaces:
+    - name: restapi-workspace
+    

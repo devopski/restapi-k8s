@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: get-image-tag
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/tags: build-tool
+
+spec:
+  params:
+    - name: kustomize-dir
+      description: Where to extract the DIGEST from.       
+
+  results:
+    - name: TAG
+      description: The image tag
+
+  workspaces:
+    - name: source
+      description: The workspace holding the cloned repo
+
+  description: >-
+    This task can be used to get any Image TAG from a Kustomization.yaml file. 
+
+  steps:
+    - name: get-image-tag
+      image: quay.io/wpernath/kustomize-ubi:latest
+      script: |
+        # yq eval '.images[0].digest' $(workspaces.source.path)/$(params.kustomize-dir)/kustomization.yaml
+        
+        TAG=$(yq eval '.images[0].newTag' $(workspaces.source.path)/$(params.kustomize-dir)/kustomization.yaml)
+        echo " TAG: $TAG"
+        echo
+        echo -n $TAG > $(results.TAG.path)
+        
+    

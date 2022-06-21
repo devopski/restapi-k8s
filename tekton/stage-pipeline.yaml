@@ -1,0 +1,113 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gitops-stage-release
+spec:
+  params:
+    - name: git-url
+      type: string
+      description: the url of the config repo to clone
+      default: https://github.com/devopski/restapi-k8s.git
+    - name: git-revision
+      type: string
+      description: the revision of the config repo to clone
+      default: main
+    - name: context-dir
+      type: string
+      description: the target in the PVC to clone the git repo to
+      default: the-config
+    - name: target-image
+      type: string
+      description: The target image name of the config (without tag/digest)
+      default: quay.io/dawid_jedrzejczak/restapi
+    - name: kustomize-dev
+      type: string
+      description: Kustomize target dev
+      default: overlays/dev
+    - name: kustomize-stage
+      type: string
+      description: kustomize target stage
+      default: overlays/staging
+    - name: release-name
+      type: string
+      description: Release name will be used as image tag in quay.io and feature branch in Git
+  tasks:
+    - name: git-clone
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: deleteExisting
+          value: 'true'
+        - name: verbose
+          value: 'true'
+        - name: revision
+          value: $(params.git-revision)
+        - name: subdirectory
+          value: $(params.context-dir)
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: restapi-workspace 
+    - name: git-branch
+      params:
+        - name: BASE_IMAGE
+          value: >-
+            docker.io/alpine/git:v2.26.2@sha256:23618034b0be9205d9cc0846eb711b12ba4c9b468efdd8a59aac1d7b1a23363f
+        - name: GIT_SCRIPT
+          value: cd $(params.context-dir) && git checkout -b release-$(params.release-name)
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: ClusterTask
+        name: git-cli
+      when:
+        - input: $(params.release-name)
+          operator: notin
+          values:
+            - ""
+      workspaces:
+        - name: source
+          workspace: restapi-workspace
+        - name: input
+          workspace: restapi-workspace
+    - name: get-current-image-tag
+      params:
+        - name: kustomize-dir
+          value: $(params.context-dir)/$(params.kustomize-dev)
+      runAfter:
+        - git-branch
+      taskRef:
+        kind: Task
+        name: get-image-tag
+      workspaces:
+        - name: source
+          workspace: restapi-workspace
+
+    - name: create-release
+      params:
+        - name: context-dir
+          value: $(params.context-dir)
+        - name: kustomize-dir
+          value: $(params.kustomize-stage)
+        - name: release-name
+          value: "$(params.release-name)"
+        - name: old-image
+          value: quay.io/dawid_jedrzejczak/restapi
+        - name: new-image
+          value: "$(params.target-image)"
+        - name: tag
+          value: "$(tasks.get-current-image-tag.results.TAG)"
+      runAfter:
+        - get-current-image-tag
+      taskRef:
+        kind: Task
+        name: create-release
+      workspaces:
+        - name: source
+          workspace: restapi-workspace
+
+  workspaces:
+    - name: restapi-workspace
+      optional: false
